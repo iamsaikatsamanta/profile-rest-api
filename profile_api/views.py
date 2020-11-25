@@ -6,7 +6,7 @@ from rest_framework.viewsets import ViewSet, ModelViewSet
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
-
+from rest_framework.permissions import IsAuthenticated
 from profile_api import serializers, models
 from profile_api import permission
 
@@ -57,7 +57,7 @@ class HelloViewSet(ViewSet):
         return Response({"code": 0, "result": "Delete"})
 
 class UserProfileModelViewSet(ModelViewSet):
-    
+
     serializer_class = serializers.UserProfileSerializer
     queryset = models.UserProfile.objects.all()
     authentication_classes = (TokenAuthentication, )
@@ -68,3 +68,14 @@ class UserProfileModelViewSet(ModelViewSet):
 class UserLoginApiView(ObtainAuthToken):
 
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+
+class FeedItemViewSet(ModelViewSet):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (permission.UpdateFeedUpdate, IsAuthenticated, )
+    serializer_class = serializers.FeedItemSerializer
+    queryset = models.FeedItem.objects.all()
+
+    def perform_create(self, serializer):
+        """Set User_Profile To Login User"""
+        serializer.save(user_profile=self.request.user)
